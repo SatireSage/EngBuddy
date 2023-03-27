@@ -8,7 +8,9 @@ openai.api_key = "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"
 dalle_api_endpoint = "https://api.openai.com/v1/images/generations"
 token = 'MTA4OTQwMTU5OTExMTIwMDg4MQ.GWYYvv.BAGtiyaB-pPmpV3OvdJmZwURPub6OuxZ42_l1w'
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-whitelist = [484395342859862017, 880315590378659862, 435638340188897290, 496201894209912832, 319589948766552076]
+whitelist = [484395342859862017, 880315590378659862, 435638340188897290, 496201894209912832, 319589948766552076,
+             707830806705602642, 748791122028920843, 712189433285181491, 709522217334997143, 164102395150860288, 414191464709619714]
+
 
 @client.event
 async def on_ready():
@@ -25,13 +27,20 @@ async def help(interaction: discord.Interaction):
     embed = discord.Embed(title="My Commands", description="Here are the slash commands you can use with me:",
                           color=0x4169e1)
     embed.add_field(name="", value="", inline=False)
-    embed.add_field(name="about", value="Let me tell you about myself", inline=False)
-    embed.add_field(name="imagine", value="Ask me make an image and I will create one", inline=False)
-    embed.add_field(name="ask", value="Ask me something and I will respond to the best of my ability", inline=False)
-    embed.add_field(name="public", value="Ask me something and I will respond in the current channel", inline=False)
-    embed.add_field(name="private", value="Ask me something and I will respond in your DM", inline=False)
-    embed.add_field(name="echo", value="Returns the provided argument", inline=False)
-    embed.add_field(name="others", value="I also have some secrets for you to discover", inline=False)
+    embed.add_field(
+        name="about", value="Let me tell you about myself", inline=False)
+    embed.add_field(
+        name="imagine", value="Ask me make an image and I will create one", inline=False)
+    embed.add_field(
+        name="ask", value="Ask me something and I will respond to the best of my ability", inline=False)
+    embed.add_field(
+        name="public", value="Ask me something and I will respond in the current channel", inline=False)
+    embed.add_field(
+        name="private", value="Ask me something and I will respond in your DM", inline=False)
+    embed.add_field(
+        name="echo", value="Returns the provided argument", inline=False)
+    embed.add_field(
+        name="others", value="I also have some secrets for you to discover", inline=False)
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -117,13 +126,15 @@ async def about(interaction: discord.Interaction):
                           color=0x4169e1)
     embed.set_thumbnail(url=client.user.avatar.url)
     embed.add_field(name="", value="", inline=False)
-    embed.add_field(name=f'Hey there, My Name is {client.user.name}!', value='', inline=True)
+    embed.add_field(
+        name=f'Hey there, My Name is {client.user.name}!', value='', inline=True)
     embed.add_field(name='Description:', value='EngBuddy is your personal engineering assistant available 24/7 on the '
-                                              'ESSS Discord server. With its advanced AI capabilities, '
-                                              'EngBuddy provides personalized support to help you succeed in your '
-                                              'studies and build meaningful connections with your peers.', inline=False)
-    embed.add_field(name='For more information: Invoke the help slash command!', value='', inline=True)
-    await interaction.response.send_message(embed=embed , ephemeral=True)
+                    'ESSS Discord server. With its advanced AI capabilities, '
+                    'EngBuddy provides personalized support to help you succeed in your '
+                    'studies and build meaningful connections with your peers.', inline=False)
+    embed.add_field(
+        name='For more information: Invoke the help slash command!', value='', inline=True)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @client.event
