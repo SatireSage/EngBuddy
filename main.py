@@ -38,7 +38,9 @@ messages = [
     "We can do this the easy way, or the hard way.",
     "You just don’t get it, do you?",
     "You're acting like a crazy person.",
-    "Surprise Motherfucker!"
+    "Surprise Motherfucker!",
+    "I'm just getting started.",
+    "I'm going to enjoy watching you die.",
 ]
 
 
@@ -56,11 +58,14 @@ async def on_ready():
 @client.command()
 async def add(ctx, *, id_value=None):
     if id_value is not None:
-        add_new_id(id_value)
-        user = await client.fetch_user(id_value)
-        me = await client.fetch_user(484395342859862017)
-        await user.send(f"You have been added to the whitelist by {ctx.author.name}")
-        await me.send(f"{user.name}#{user.discriminator} has been added to the whitelist.")
+        if ctx.message.author.id == 484395342859862017:
+            add_new_id(id_value)
+            user = await client.fetch_user(id_value)
+            me = await client.fetch_user(484395342859862017)
+            await user.send(f"You have been added to the whitelist by {ctx.author.name}")
+            await me.send(f"{user.name}#{user.discriminator} has been added to the whitelist.")
+        else:
+            await ctx.message.author.send(f"Nice try buddy guy {ctx.author.mention}")
 
 
 @client.command()
