@@ -41,6 +41,7 @@ messages = [
     "Surprise Motherfucker!",
     "I'm just getting started.",
     "I'm going to enjoy watching you die.",
+    "I got one word for you: Monkey"
 ]
 
 
@@ -941,7 +942,6 @@ async def on_message(message):
                 response = chatgpt_call(message.content)
         await message.channel.send(response)
     if message.author.bot:
-        print("it spoke")
         await message.channel.send(f'{message.author.mention} ' + random.choice(messages))
     if message.author.id not in whitelist:
         return
