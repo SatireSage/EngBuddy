@@ -9,8 +9,11 @@ import json
 from utils.embed import embed
 import html
 import aiohttp
+import sqlite3
 
 sfu_red = 0xA6192E
+rateProf = 0x0055FD
+courseDigger = 0xE4bC0C
 openai.api_key = "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"
 dalle_api_endpoint = "https://api.openai.com/v1/images/generations"
 token = 'MTA4OTQwMTU5OTExMTIwMDg4MQ.GWYYvv.BAGtiyaB-pPmpV3OvdJmZwURPub6OuxZ42_l1w'
@@ -25,7 +28,7 @@ async def on_ready():
         await client.change_presence(activity=discord.Game(name="MATLAB"))
         await client.tree.sync()
     except Exception as e:
-        print("Something went wrong.")
+        print(f"Something went wrong: {e}")
         exit()
 
 
@@ -39,42 +42,53 @@ async def add(ctx, *, id_value):
 
 
 @client.tree.command(name="help", description="Information about available commands")
-async def help(interaction: discord.Interaction):
-    embed = discord.Embed(title="My Commands", description="Here are the slash commands you can use with me:",
-                          color=0x4169e1)
-    embed.add_field(name="", value="", inline=False)
-    embed.add_field(
+async def help_func(interaction: discord.Interaction):
+    embed_holder = discord.Embed(title="My Commands", description="Here are the slash commands you can use with me:",
+                                 color=0x4169e1)
+    embed_holder.add_field(name="", value="", inline=False)
+    embed_holder.add_field(
         name="about", value="Let me tell you about myself", inline=False)
-    embed.add_field(
+    embed_holder.add_field(
         name="ask", value="Ask me something and I will respond to the best of my ability", inline=False)
-    embed.add_field(
+    embed_holder.add_field(
         name="imagine", value="Ask me make an image and I will create one", inline=False)
-    embed.add_field(
+    embed_holder.add_field(
         name="sfu", value="Information about available sfu classes", inline=False)
-    embed.add_field(
+    embed_holder.add_field(
         name="outline", value="Outline of an available sfu classes", inline=False)
-    embed.add_field(
+    embed_holder.add_field(
+        name="rate_prof", value="I will pull an available rating of the prof", inline=False)
+    embed_holder.add_field(
+        name="rate_course", value="I will pull an available rating of the course", inline=False)
+    embed_holder.add_field(
         name="echo", value="Returns the provided argument", inline=False)
-    embed.add_field(
+    embed_holder.add_field(
         name="others", value="I also have some secrets for you to discover", inline=False)
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed_holder, ephemeral=True)
 
 
 @client.tree.command(name="imagine", description="Ask me to make an image!")
 @app_commands.describe(prompt="Ask me to make an image!")
 @app_commands.describe(visibility="Options: private, public or dm")
-async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: str):
+async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: str = None):
     if interaction.user.id not in whitelist:
         me = await client.fetch_user(484395342859862017)
         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the imagine command.")
         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
         return
-    if remove_spaces(visibility.lower()) == "private":
-        selector = True
-    elif remove_spaces(visibility.lower()) == "public":
-        selector = False
+    dm = False
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        elif remove_spaces(visibility.lower()) == "dm":
+            selector = False
+            dm = True
+        else:
+            selector = True
     else:
-        selector = False
+        selector = True
     await interaction.response.defer(ephemeral=selector)
     headers = {"Authorization": f"Bearer {openai.api_key}"}
     data = {
@@ -88,7 +102,7 @@ async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: 
 
     if response.status_code == 200:
         image_url = response.json()["data"][0]["url"]
-        if remove_spaces(visibility.lower()) == "dm":
+        if dm:
             await interaction.user.send(image_url)
             await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
         else:
@@ -100,27 +114,35 @@ async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: 
 @client.tree.command(name="ask", description="Ask me something!")
 @app_commands.describe(question="Ask me something!")
 @app_commands.describe(visibility="Options: private, public or dm")
-async def ask(interaction: discord.Interaction, *, question: str, visibility: str):
+async def ask(interaction: discord.Interaction, *, question: str, visibility: str = None):
     if interaction.user.id not in whitelist:
         me = await client.fetch_user(484395342859862017)
         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the ask command.")
         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
         return
-    if remove_spaces(visibility.lower()) == "private":
-        selector = True
-    elif remove_spaces(visibility.lower()) == "public":
-        selector = False
+    dm = False
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        elif remove_spaces(visibility.lower()) == "dm":
+            selector = False
+            dm = True
+        else:
+            selector = True
     else:
-        selector = False
+        selector = True
     await interaction.response.defer(ephemeral=selector)
     try:
         response = chatgpt_call(question)
-        if remove_spaces(visibility.lower()) == "dm":
+        if dm:
             await interaction.user.send(f'Prompt: {question}\n\n Response: {response}')
             await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
         else:
             await interaction.followup.send(f'Prompt: {question}\n\n Response: {response}')
     except Exception as e:
+        print(f"Something went wrong: {e}")
         await interaction.followup.send("Sorry, I couldn't generate a response for that question.")
 
 
@@ -137,42 +159,46 @@ async def echo(interaction: discord.Interaction, *, argument: str):
 
 @client.tree.command(name="about", description="Let me tell you about myself!")
 async def about(interaction: discord.Interaction):
-    embed = discord.Embed(title="About Me!", description="Here is a little info about me:",
-                          color=0x4169e1)
-    embed.set_thumbnail(url=client.user.avatar.url)
-    embed.add_field(name="", value="", inline=False)
-    embed.add_field(
+    embed_holder = discord.Embed(title="About Me!", description="Here is a little info about me:",
+                                 color=0x4169e1)
+    embed_holder.set_thumbnail(url=client.user.avatar.url)
+    embed_holder.add_field(name="", value="", inline=False)
+    embed_holder.add_field(
         name=f'Hey there, My Name is {client.user.name}!', value='', inline=True)
-    embed.add_field(name='Description:', value='EngBuddy is your personal engineering assistant available 24/7 on the '
-                                               'ESSS Discord server. With its advanced AI capabilities, '
-                                               'EngBuddy provides personalized support to help you succeed in your '
-                                               'studies and build meaningful connections with your peers.',
-                    inline=False)
-    embed.add_field(
+    embed_holder.add_field(name='Description:',
+                           value='EngBuddy is your personal engineering assistant available 24/7 on the '
+                                 'ESSS Discord server. With its advanced AI capabilities, '
+                                 'EngBuddy provides personalized support to help you succeed in your '
+                                 'studies and build meaningful connections with your peers.',
+                           inline=False)
+    embed_holder.add_field(
         name='For more information: Invoke the help slash command!', value='', inline=True)
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed_holder, ephemeral=True)
 
 
 @client.tree.command(name="sfu", description="Information about available sfu classes")
 @app_commands.describe(course="Information about available sfu classes")
 @app_commands.describe(visibility="Options: private or public")
-async def sfu(interaction: discord.Interaction, *, course: str, visibility: str):
+async def sfu(interaction: discord.Interaction, *, course: str, visibility: str = None):
     if interaction.user.id not in whitelist:
         me = await client.fetch_user(484395342859862017)
         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the sfu command.")
         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
         return
-    if remove_spaces(visibility.lower()) == "private":
-        selector = True
-    elif remove_spaces(visibility.lower()) == "public":
-        selector = False
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        else:
+            selector = False
     else:
         selector = False
     await interaction.response.defer(ephemeral=selector)
     if not course:
         e_obj = await embed(
             interaction,
-            title='Missing Arguments',
+            title='Invalid Arguments',
             author=client.user.name,
             avatar=client.user.avatar.url,
             colour=sfu_red,
@@ -261,10 +287,10 @@ async def sfu(interaction: discord.Interaction, *, course: str, visibility: str)
                 description=(
                     'Couldn\'t find anything for:\n{0}/{1}/{2}/{3}/\nMake sure you entered all the arguments '
                     'correctly').format(
-                        year,
-                        term.upper(),
-                        course_code.upper(),
-                        course_num
+                    year,
+                    term.upper(),
+                    course_code.upper(),
+                    course_num
                 ),
                 footer='SFU Error'
             )
@@ -298,32 +324,35 @@ async def sfu(interaction: discord.Interaction, *, course: str, visibility: str)
 @client.tree.command(name="outline", description="Outline of an available sfu classes")
 @app_commands.describe(course="Outline of an available sfu classes")
 @app_commands.describe(visibility="Options: private or public")
-async def outline(interaction: discord.Interaction, *, course: str, visibility: str):
+async def outline(interaction: discord.Interaction, *, course: str, visibility: str = None):
     if interaction.user.id not in whitelist:
         me = await client.fetch_user(484395342859862017)
         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the outline command.")
         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
         return
-    if remove_spaces(visibility.lower()) == "private":
-        selector = True
-    elif remove_spaces(visibility.lower()) == "public":
-        selector = False
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        else:
+            selector = False
     else:
         selector = False
     await interaction.response.defer(ephemeral=selector)
     course_value = course
     usage = [
-            ['Usage', '`/outline <course> [<term> <section> next]`\n*<term>, <section>, and next are optional ar'
-                'guments*\nInclude the keyword `next` to look at the next semester\'s outline. Note: `next` is'
-                ' used for course registration purposes and if the next semester info isn\'t available it\'ll '
-                'return an error.'],
-            ['Example', '`/outline ensc252\n/outline ensc252 fall\n/outline ensc252 d200\n/outline ensc252'
-             ' spring d200\n/outline ensc252 next`']]
+        ['Usage', '`/outline <course> [<term> <section> next]`\n*<term>, <section>, and next are optional ar'
+                  'guments*\nInclude the keyword `next` to look at the next semester\'s outline. Note: `next` is'
+                  ' used for course registration purposes and if the next semester info isn\'t available it\'ll '
+                  'return an error.'],
+        ['Example', '`/outline ensc252\n/outline ensc252 fall\n/outline ensc252 d200\n/outline ensc252'
+                    ' spring d200\n/outline ensc252 next`']]
 
     if not course:
         e_obj = await embed(
             interaction,
-            title='Missing Arguments',
+            title='Invalid Arguments',
             author=client.user.name,
             avatar=client.user.avatar.url,
             colour=sfu_red,
@@ -507,7 +536,7 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
                 await interaction.followup.send(embed=e_obj)
             return
 
-        outline = info['outlinePath'].upper()
+        outline_value = info['outlinePath'].upper()
         title = info['title']
         try:
             instructor = ''
@@ -581,7 +610,7 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
             data['info']['outlinePath'])
         # Make tuple of the data for the fields
         fields = [
-            ['Outline', outline],
+            ['Outline', outline_value],
             ['Title', title],
             ['Instructor', instructor],
             ['Class Times', class_times],
@@ -609,24 +638,250 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
             await interaction.followup.send(embed=e_obj)
 
 
-@client.tree.command(name="rateProf", description="I will pull an available rating of the prof")
+@client.tree.command(name="rate_prof", description="I will pull an available rating of the prof")
 @app_commands.describe(name="Provide the name of the prof")
 @app_commands.describe(visibility="Options: private or public")
-async def rateProf(interaction: discord.Interaction, *, name: str, visibility: str):
+async def rate_prof(interaction: discord.Interaction, *, name: str, visibility: str = None):
     if interaction.user.id not in whitelist:
         me = await client.fetch_user(484395342859862017)
         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the outline command.")
         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
         return
-    if remove_spaces(visibility.lower()) == "private":
-        selector = True
-    elif remove_spaces(visibility.lower()) == "public":
-        selector = False
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        else:
+            selector = False
     else:
         selector = False
     await interaction.response.defer(ephemeral=selector)
-    
-    
+    if not name:
+        e_obj = await embed(
+            interaction,
+            title='Invalid Arguments',
+            author=client.user.name,
+            avatar=client.user.avatar.url,
+            colour=rateProf,
+            content=[['Usage', '`/rate_prof <arg>`'],
+                     ['Example', '`/rate_prof Craig Scratchley`']],
+            footer='rateProf Error'
+        )
+        if e_obj is not False:
+            await interaction.followup.send(embed=e_obj)
+        return
+
+    # Check if there is a space in the name
+    if len(name.split()) < 2:
+        e_obj = await embed(
+            interaction,
+            title='Invalid Arguments:\nFirst and Last name Required',
+            author=client.user.name,
+            avatar=client.user.avatar.url,
+            colour=rateProf,
+            content=[['Usage', '`/rate_prof <arg>`'],
+                     ['Example', '`/rate_prof Craig Scratchley`']],
+            footer='rateProf Error'
+        )
+        if e_obj is not False:
+            await interaction.followup.send(embed=e_obj)
+        return
+
+    url = "https://www.ratemyprofessors.com/search/teachers?query={}&sid={}"
+    prof_name = name.replace(" ", "+")
+    univ_id = 1482
+    search_url = url.format(prof_name, univ_id)
+    response = requests.get(search_url)
+    if response.status_code != 200:
+        e_obj = await embed(
+            interaction,
+            title='No Response:\nPlease Try Again',
+            author=client.user.name,
+            avatar=client.user.avatar.url,
+            colour=rateProf,
+            content=[['Usage', '`/rate_prof <arg>`'],
+                     ['Example', '`/rate_prof Craig Scratchley`']],
+            footer='rateProf Error'
+        )
+        if e_obj is not False:
+            await interaction.followup.send(embed=e_obj)
+        return
+    else:
+        match = re.search(
+            r'window\.__RELAY_STORE__\s*=\s*(\{.*});', response.text)
+        if not match:
+            e_obj = await embed(
+                interaction,
+                title='No Match Found:\nPlease Try Again',
+                author=client.user.name,
+                avatar=client.user.avatar.url,
+                colour=rateProf,
+                content=[['Usage', '`/rate_prof <arg>`'],
+                         ['Example', '`/rate_prof Craig Scratchley`']],
+                footer='rateProf Error'
+            )
+            if e_obj is not False:
+                await interaction.followup.send(embed=e_obj)
+            return
+        else:
+            data = json.loads(match.group(1))
+            professor_data = []
+            for key, value in data.items():
+                if 'legacyId' in json.dumps(value):
+                    legacy_id = str(value['legacyId'])
+                    avg_rating = str(value['avgRating'])
+                    num_ratings = str(value['numRatings'])
+                    would_take_again_percent = str(
+                        value['wouldTakeAgainPercent'])
+                    avg_difficulty = str(value['avgDifficulty'])
+                    first_name = str(value['firstName'])
+                    last_name = str(value['lastName'])
+                    department = str(value['department'])
+                    rmp_url = 'https://www.ratemyprofessors.com/professor/{0}'.format(
+                        legacy_id)
+                    link = '[here]({})'.format(rmp_url)
+                    fields = [
+                        ['Name', first_name + " " + last_name],
+                        ['Department', department],
+                        ['Rating', avg_rating],
+                        ['Number of Ratings', num_ratings],
+                        ['Difficulty', avg_difficulty],
+                        ['Would Take Again', would_take_again_percent],
+                        ['Url', link]
+                    ]
+                    professor_data.append(tuple(fields))
+                    img = 'http://www.sfu.ca/content/sfu/clf/jcr:content/main_content/image_0.img.1280.high.jpg' \
+                          '/1468454298527.jpg'
+                    e_obj = await embed(
+                        interaction,
+                        title=f'RateMyProf Results: ',
+                        author=client.user.name,
+                        avatar=client.user.avatar.url,
+                        colour=rateProf,
+                        thumbnail=img,
+                        content=fields,
+                        footer='Written by EngBuddy'
+                    )
+                    if e_obj is not False:
+                        await interaction.followup.send(embed=e_obj)
+            if len(professor_data) == 0:
+                e_obj = await embed(
+                    interaction,
+                    title='No Response:\nPlease Try Again',
+                    author=client.user.name,
+                    avatar=client.user.avatar.url,
+                    colour=rateProf,
+                    content=[['Usage', '`/rate_prof <arg>`'],
+                             ['Example', '`/rate_prof Craig Scratchley`']],
+                    footer='rateProf Error'
+                )
+                if e_obj is not False:
+                    await interaction.followup.send(embed=e_obj)
+                return
+
+
+@client.tree.command(name="rate_course", description="I will pull an available rating of the course")
+@app_commands.describe(course="Provide the name of the course")
+@app_commands.describe(visibility="Options: private or public")
+async def rate_course(interaction: discord.Interaction, *, course: str, visibility: str = None):
+    if interaction.user.id not in whitelist:
+        me = await client.fetch_user(484395342859862017)
+        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the outline command.")
+        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
+        return
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        else:
+            selector = False
+    else:
+        selector = False
+    await interaction.response.defer(ephemeral=selector)
+    course = course.upper()
+    match = re.match(r'(\D+)(\d+)', course)
+    if match:
+        course_name = match.group(1).upper()  # Capitalize the alphabetic part
+        course_number = match.group(2)
+        search_course = '{} {}'.format(remove_spaces(
+            course_name), remove_spaces(course_number))
+        course_parts = search_course.split()
+        if len(course_parts) != 2:
+            e_obj = await embed(
+                interaction,
+                title='Invalid Arguments',
+                author=client.user.name,
+                avatar=client.user.avatar.url,
+                colour=courseDigger,
+                content=[['Usage', '`/rate_course <arg>`'],
+                         ['Example', '`/rate_course ENSC 252`']],
+                footer='rate_course Error'
+            )
+            if e_obj is not False:
+                await interaction.followup.send(embed=e_obj)
+            return
+        else:
+            conn = sqlite3.connect('sfu_grades.db')
+            tables = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+            for table in tables:
+                table_name = table[0]
+                if 'course_name' in [column[1] for column in
+                                     conn.execute("PRAGMA table_info('{}');".format(table_name)).fetchall()]:
+                    row = conn.execute(
+                        "SELECT * FROM {} WHERE course_name='{}';".format(table_name, search_course)).fetchall()
+                    if row:
+                        fields = [
+                            ['Course Name', str(row[0][0])],
+                            ['Median Grade', str(row[0][1])],
+                            ['Fail Rate', f"{row[0][2]}%"]
+                        ]
+                        img = 'http://www.sfu.ca/content/sfu/clf/jcr:content/main_content/image_0.img.1280.high.jpg' \
+                              '/1468454298527.jpg'
+                        e_obj = await embed(
+                            interaction,
+                            title=f'CourseDiggers Results: ',
+                            author=client.user.name,
+                            avatar=client.user.avatar.url,
+                            colour=courseDigger,
+                            thumbnail=img,
+                            content=fields,
+                            footer='Written by EngBuddy'
+                        )
+                        if e_obj is not False:
+                            await interaction.followup.send(embed=e_obj)
+                    else:
+                        e_obj = await embed(
+                            interaction,
+                            title='No Response:\nPlease Try Again',
+                            author=client.user.name,
+                            avatar=client.user.avatar.url,
+                            colour=courseDigger,
+                            content=[['Usage', '`/rate_course <arg>`'],
+                                     ['Example', '`/rate_course ENSC 252`']],
+                            footer='rate_course Error'
+                        )
+                        if e_obj is not False:
+                            await interaction.followup.send(embed=e_obj)
+                        return
+            conn.close()
+    else:
+        e_obj = await embed(
+            interaction,
+            title='Invalid Arguments',
+            author=client.user.name,
+            avatar=client.user.avatar.url,
+            colour=courseDigger,
+            content=[['Usage', '`/rate_course <arg>`'],
+                     ['Example', '`/rate_course ENSC 252`']],
+            footer='rate_course Error'
+        )
+        if e_obj is not False:
+            await interaction.followup.send(embed=e_obj)
+        return
+
 
 @client.event
 async def on_message(message):
