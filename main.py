@@ -1,12 +1,15 @@
+# Project: EngBuddy
+# Bot Created By: Sahaj Singh
+
 from discord.ext import commands
 from discord import app_commands
+from utils.embed import embed
 import discord
 import openai
 import requests
 import time
 import re
 import json
-from utils.embed import embed
 import html
 import aiohttp
 import sqlite3
@@ -51,12 +54,13 @@ async def on_ready():
 
 
 @client.command()
-async def add(ctx, *, id_value):
-    add_new_id(id_value)
-    user = await client.fetch_user(id_value)
-    me = await client.fetch_user(484395342859862017)
-    await user.send(f"You have been added to the whitelist by {ctx.author.name}")
-    await me.send(f"{user.name}#{user.discriminator} has been added to the whitelist.")
+async def add(ctx, *, id_value=None):
+    if id_value is not None:
+        add_new_id(id_value)
+        user = await client.fetch_user(id_value)
+        me = await client.fetch_user(484395342859862017)
+        await user.send(f"You have been added to the whitelist by {ctx.author.name}")
+        await me.send(f"{user.name}#{user.discriminator} has been added to the whitelist.")
 
 
 @client.command()
@@ -328,6 +332,8 @@ async def sfu(interaction: discord.Interaction, *, course: str, visibility: str 
 
     sfu_url = 'http://www.sfu.ca/students/calendar/{0}/{1}/courses/{2}/{3}.html'.format(year, term, course_code,
                                                                                         course_num)
+    img = 'http://www.sfu.ca/content/sfu/clf/jcr:content/main_content/image_0.img.1280.high.jpg' \
+          '/1468454298527.jpg'
     link = '[here]({})'.format(sfu_url)
     footer = 'Written by EngBuddy'
 
@@ -343,6 +349,7 @@ async def sfu(interaction: discord.Interaction, *, course: str, visibility: str 
         avatar=client.user.avatar.url,
         content=fields,
         colour=sfu_red,
+        thumbnail=img,
         footer=footer
     )
     if embed_obj is not False:
@@ -923,11 +930,14 @@ async def on_message(message):
             await message.channel.send("You dont have access. Ask Sahaj for access!")
             return
         async with message.channel.typing():
-            response = chatgpt_call(message.content)
+            if "kill" in message.content or "add" in message.content:
+                response = "Custom Command"
+            else:
+                response = chatgpt_call(message.content)
         await message.channel.send(response)
     if message.author.bot:
         print("it spoke")
-        await message.channel.send(f'{message.author.mention} '+random.choice(messages))
+        await message.channel.send(f'{message.author.mention} ' + random.choice(messages))
     if message.author.id not in whitelist:
         return
     try:
