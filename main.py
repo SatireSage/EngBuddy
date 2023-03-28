@@ -20,7 +20,6 @@ dalle_api_endpoint = "https://api.openai.com/v1/images/generations"
 token = 'MTA4OTQwMTU5OTExMTIwMDg4MQ.GWYYvv.BAGtiyaB-pPmpV3OvdJmZwURPub6OuxZ42_l1w'
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 whitelist = []
-other_bots = [235148962103951360, 1018383175141032038]
 messages = [
     "Don’t do anything stupid.",
     "I wouldn’t do that if I were you.",
@@ -58,6 +57,16 @@ async def add(ctx, *, id_value):
     me = await client.fetch_user(484395342859862017)
     await user.send(f"You have been added to the whitelist by {ctx.author.name}")
     await me.send(f"{user.name}#{user.discriminator} has been added to the whitelist.")
+
+
+@client.command()
+async def kill(ctx):
+    if ctx.message.author.id == 484395342859862017:
+        me = await client.fetch_user(484395342859862017)
+        await me.send(f"Going to recharge my batteries!")
+        exit(0)
+    else:
+        await ctx.message.author.send(f"Nice try buddy guy {ctx.author.mention}")
 
 
 @client.tree.command(name="help", description="Information about available commands")
@@ -540,7 +549,7 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
 
             # Course schedule information
             schedule = data['courseSchedule']
-        except Exception:
+        except (Exception,):
             e_obj = await embed(
                 interaction,
                 title='SFU Course Outlines',
@@ -563,7 +572,7 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
             for prof in instructors:
                 instructor += prof['name']
                 instructor += ' [{}]\n'.format(prof['email'])
-        except Exception:
+        except (Exception,):
             instructor = 'TBA'
 
         # Course schedule info parsing
@@ -603,7 +612,7 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
                 )
             )
             exam_times += '\n{}'.format(room_info)
-        except Exception:
+        except (Exception,):
             pass
         # Other details
         # need to cap len for details
@@ -613,16 +622,16 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
             details = re.sub('<[^<]+?>', '', details)
             if len(details) > 200:
                 details = '{}\n(...)'.format(details[:200])
-        except Exception:
+        except (Exception,):
             details = 'None'
         try:
             prerequisites = data['info']['prerequisites'] or 'None'
-        except Exception:
+        except (Exception,):
             prerequisites = 'None'
 
         try:
             corequisites = data['info']['corequisites']
-        except Exception:
+        except (Exception,):
             corequisites = ''
 
         url = 'http://www.sfu.ca/outlines.html?{}'.format(
@@ -916,10 +925,11 @@ async def on_message(message):
         async with message.channel.typing():
             response = chatgpt_call(message.content)
         await message.channel.send(response)
+    if message.author.bot:
+        print("it spoke")
+        await message.channel.send(f'{message.author.mention} '+random.choice(messages))
     if message.author.id not in whitelist:
         return
-    if message.author.id in other_bots:
-        await message.channel.send(f'{message.author.mention} '+random.choice(messages))
     try:
         response = handle_message(remove_spaces(message.content))
         if response == 1:
