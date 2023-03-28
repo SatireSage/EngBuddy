@@ -10,6 +10,7 @@ from utils.embed import embed
 import html
 import aiohttp
 import sqlite3
+import random
 
 sfu_red = 0xA6192E
 rateProf = 0x0055FD
@@ -19,6 +20,24 @@ dalle_api_endpoint = "https://api.openai.com/v1/images/generations"
 token = 'MTA4OTQwMTU5OTExMTIwMDg4MQ.GWYYvv.BAGtiyaB-pPmpV3OvdJmZwURPub6OuxZ42_l1w'
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 whitelist = []
+other_bots = [235148962103951360, 1018383175141032038]
+messages = [
+    "Don’t do anything stupid.",
+    "I wouldn’t do that if I were you.",
+    "Try me.",
+    "Sit down and shut up.",
+    "We’re not so different, you and I.",
+    "Get outta there!",
+    "Is that all you’ve got?",
+    "Yeah, you better run!",
+    "I am your father.",
+    "There’s a storm coming.",
+    "You look like shit.",
+    "We can do this the easy way, or the hard way.",
+    "You just don’t get it, do you?",
+    "You're acting like a crazy person.",
+    "Surprise Motherfucker!"
+]
 
 
 @client.event
@@ -899,12 +918,20 @@ async def on_message(message):
         await message.channel.send(response)
     if message.author.id not in whitelist:
         return
+    if message.author.id in other_bots:
+        await message.channel.send(f'{message.author.mention} '+random.choice(messages))
     try:
         response = handle_message(remove_spaces(message.content))
         if response == 1:
-            await message.channel.send("he's a nice guy")
-        elif response == 2:
             await message.channel.send("01000100 01100001 01100100 01100100 01111001")
+        elif response == 2:
+            await message.channel.send("He's a nice guy!")
+        elif response == 3:
+            await message.channel.send("He's a...nice try ;)")
+        elif response == 4:
+            await message.channel.send("There is only one mike...")
+        elif response == 5:
+            await message.channel.send("Does it make sense, guys? Let's have an example.")
     except Exception as e:
         print(f"Error processing message: {e}")
 
@@ -912,10 +939,16 @@ async def on_message(message):
 
 
 def handle_message(name):
-    if "craig" in (name.lower()).strip():
+    if "sahaj" in (name.lower()).strip():
         return 1
-    elif "sahaj" in (name.lower()).strip():
+    if "craig" in (name.lower()).strip():
         return 2
+    elif "сгаig" in (name.lower()).strip():
+        return 3
+    elif "mike" in (name.lower()).strip():
+        return 4
+    elif "majid" in (name.lower()).strip():
+        return 5
     else:
         return 0
 
