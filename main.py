@@ -41,6 +41,7 @@ messages = [
     "I'm going to enjoy watching you die.",
     "I got one word for you: Monkey"
 ]
+previous_message = None
 
 
 @client.event
@@ -81,7 +82,6 @@ async def kill(ctx):
         await ctx.message.author.send(f"Nice try buddy guy {ctx.author.mention}")
 
 
-
 @client.tree.command(name="help", description="Information about available commands")
 async def help_func(interaction: discord.Interaction):
     embed_holder = discord.Embed(title="My Commands", description="Here are the slash commands you can use with me:",
@@ -108,48 +108,6 @@ async def help_func(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed_holder, ephemeral=True)
 
 
-# @client.tree.command(name="imagine", description="Ask me to make an image!")
-# @app_commands.describe(prompt="Ask me to make an image!")
-# @app_commands.describe(visibility="Options: private, public or dm")
-# async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: str = None):
-#     if interaction.user.id not in whitelist:
-#         me = await client.fetch_user(484395342859862017)
-#         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the imagine command.")
-#         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
-#         return
-#     dm = False
-#     if visibility is not None:
-#         if remove_spaces(visibility.lower()) == "private":
-#             selector = True
-#         elif remove_spaces(visibility.lower()) == "public":
-#             selector = False
-#         elif remove_spaces(visibility.lower()) == "dm":
-#             selector = False
-#             dm = True
-#         else:
-#             selector = True
-#     else:
-#         selector = True
-#     await interaction.response.defer(ephemeral=selector)
-#     headers = {"Authorization": f"Bearer {openai.api_key}"}
-#     data = {
-#         "model": "image-alpha-001",
-#         "prompt": prompt,
-#         "num_images": 1,
-#         "size": "1024x1024",
-#         "response_format": "url"
-#     }
-#     response = requests.post(dalle_api_endpoint, headers=headers, json=data)
-#
-#     if response.status_code == 200:
-#         image_url = response.json()["data"][0]["url"]
-#         if dm:
-#             await interaction.user.send(image_url)
-#             await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
-#         else:
-#             await interaction.followup.send(image_url)
-#     else:
-#         await interaction.followup.send("Sorry something went wrong generating your image.")
 @client.tree.command(name="imagine", description="Ask me to make an image!")
 @app_commands.describe(prompt="Ask me to make an image!")
 @app_commands.describe(visibility="Options: private, public or dm")
@@ -974,6 +932,18 @@ async def rate_course(interaction: discord.Interaction, *, course: str, visibili
         return
 
 
+async def send_unique_message(message):
+    global previous_message
+    chosen_message = random.choice(messages)
+
+    # Check if the chosen message is the same as the previous message
+    while chosen_message == previous_message:
+        chosen_message = random.choice(messages)
+
+    previous_message = chosen_message
+    await message.channel.send(f'{message.author.mention} {chosen_message}')
+
+
 @client.event
 async def on_message(message):
     # Make sure bot doesn't get stuck in an infinite loop
@@ -995,7 +965,7 @@ async def on_message(message):
                     print(f"Error: {e}")
         await message.channel.send(response)
     if message.author.bot:
-        await message.channel.send(f'{message.author.mention} ' + random.choice(messages))
+        await send_unique_message(message)
     if message.author.id not in whitelist:
         return
     try:
