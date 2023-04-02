@@ -1,6 +1,4 @@
-# Project: EngBuddy
-# Bot Created By: Sahaj Singh
-
+# Project: EngBuddy --> Bot Created By: Sahaj Singh
 from discord.ext import commands
 from discord import app_commands
 from utils.embed import embed
@@ -69,14 +67,19 @@ async def add(ctx, *, id_value=None):
             await ctx.message.author.send(f"Nice try buddy guy {ctx.author.mention}")
 
 
+async def shutdown_bot():
+    me = await client.fetch_user(484395342859862017)
+    await me.send("Going to recharge my batteries!")
+    await client.close()
+
+
 @client.command()
 async def kill(ctx):
     if ctx.message.author.id == 484395342859862017:
-        me = await client.fetch_user(484395342859862017)
-        await me.send(f"Going to recharge my batteries!")
-        exit(0)
+        await shutdown_bot()
     else:
         await ctx.message.author.send(f"Nice try buddy guy {ctx.author.mention}")
+
 
 
 @client.tree.command(name="help", description="Information about available commands")
@@ -105,6 +108,48 @@ async def help_func(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed_holder, ephemeral=True)
 
 
+# @client.tree.command(name="imagine", description="Ask me to make an image!")
+# @app_commands.describe(prompt="Ask me to make an image!")
+# @app_commands.describe(visibility="Options: private, public or dm")
+# async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: str = None):
+#     if interaction.user.id not in whitelist:
+#         me = await client.fetch_user(484395342859862017)
+#         await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the imagine command.")
+#         await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
+#         return
+#     dm = False
+#     if visibility is not None:
+#         if remove_spaces(visibility.lower()) == "private":
+#             selector = True
+#         elif remove_spaces(visibility.lower()) == "public":
+#             selector = False
+#         elif remove_spaces(visibility.lower()) == "dm":
+#             selector = False
+#             dm = True
+#         else:
+#             selector = True
+#     else:
+#         selector = True
+#     await interaction.response.defer(ephemeral=selector)
+#     headers = {"Authorization": f"Bearer {openai.api_key}"}
+#     data = {
+#         "model": "image-alpha-001",
+#         "prompt": prompt,
+#         "num_images": 1,
+#         "size": "1024x1024",
+#         "response_format": "url"
+#     }
+#     response = requests.post(dalle_api_endpoint, headers=headers, json=data)
+#
+#     if response.status_code == 200:
+#         image_url = response.json()["data"][0]["url"]
+#         if dm:
+#             await interaction.user.send(image_url)
+#             await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
+#         else:
+#             await interaction.followup.send(image_url)
+#     else:
+#         await interaction.followup.send("Sorry something went wrong generating your image.")
 @client.tree.command(name="imagine", description="Ask me to make an image!")
 @app_commands.describe(prompt="Ask me to make an image!")
 @app_commands.describe(visibility="Options: private, public or dm")
@@ -128,6 +173,7 @@ async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: 
     else:
         selector = True
     await interaction.response.defer(ephemeral=selector)
+
     headers = {"Authorization": f"Bearer {openai.api_key}"}
     data = {
         "model": "image-alpha-001",
@@ -136,17 +182,19 @@ async def imagine(interaction: discord.Interaction, *, prompt: str, visibility: 
         "size": "1024x1024",
         "response_format": "url"
     }
-    response = requests.post(dalle_api_endpoint, headers=headers, json=data)
 
-    if response.status_code == 200:
-        image_url = response.json()["data"][0]["url"]
-        if dm:
-            await interaction.user.send(image_url)
-            await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
-        else:
-            await interaction.followup.send(image_url)
-    else:
-        await interaction.followup.send("Sorry something went wrong generating your image.")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(dalle_api_endpoint, headers=headers, json=data) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                image_url = response_json["data"][0]["url"]
+                if dm:
+                    await interaction.user.send(image_url)
+                    await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
+                else:
+                    await interaction.followup.send(image_url)
+            else:
+                await interaction.followup.send("Sorry something went wrong generating your image.")
 
 
 @client.tree.command(name="ask", description="Ask me something!")
@@ -173,12 +221,14 @@ async def ask(interaction: discord.Interaction, *, question: str, visibility: st
         selector = True
     await interaction.response.defer(ephemeral=selector)
     try:
-        response = chatgpt_call(question)
+        response = await chatgpt_call(question)
         if dm:
             await interaction.user.send(f'Prompt: {question}\n\n Response: {response}')
             await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMS!")
         else:
             await interaction.followup.send(f'Prompt: {question}\n\n Response: {response}')
+    except openai.OpenAIError as e:
+        print(f"Error: {e}")
     except Exception as e:
         print(f"Something went wrong: {e}")
         await interaction.followup.send("Sorry, I couldn't generate a response for that question.")
@@ -937,9 +987,12 @@ async def on_message(message):
             return
         async with message.channel.typing():
             if "kill" in message.content or "add" in message.content:
-                response = "Custom Command"
+                response = "Processing Custom Command:"
             else:
-                response = chatgpt_call(message.content)
+                try:
+                    response = await chatgpt_call(message.content)
+                except openai.OpenAIError as e:
+                    print(f"Error: {e}")
         await message.channel.send(response)
     if message.author.bot:
         await message.channel.send(f'{message.author.mention} ' + random.choice(messages))
@@ -978,15 +1031,27 @@ def handle_message(name):
         return 0
 
 
-def chatgpt_call(question):
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
+async def chatgpt_call(question):
+    url = "https://api.openai.com/v1/chat/completions"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {openai.api_key}",
+    }
+
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
             {"role": "user", "content": question}
         ]
-    )
-    chat_response = completion.choices[0].message.content
-    return chat_response
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=headers, json=data) as response:
+            response_json = await response.json()
+
+    chat_response = response_json["choices"][0]["message"]["content"]
+    return chat_response[:2000]
 
 
 def remove_spaces(value):
