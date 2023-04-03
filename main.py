@@ -1,4 +1,7 @@
-# Project: EngBuddy --> Bot Created By: Sahaj Singh
+# Project: EngBuddy
+# Bot Created By: Sahaj Singh
+# Release V1.0
+
 from discord.ext import commands
 from discord import app_commands
 from utils.embed import embed
@@ -956,13 +959,10 @@ async def on_message(message):
             await message.channel.send("You dont have access. Ask Sahaj for access!")
             return
         async with message.channel.typing():
-            if "kill" in message.content or "add" in message.content:
-                response = "Processing Custom Command:"
-            else:
-                try:
-                    response = await chatgpt_call(message.content)
-                except openai.OpenAIError as e:
-                    print(f"Error: {e}")
+            try:
+                response = await chatgpt_call(message.content)
+            except openai.OpenAIError as e:
+                print(f"Error: {e}")
         await message.channel.send(response)
     if message.author.bot:
         await send_unique_message(message)
