@@ -1,6 +1,4 @@
-# Project: EngBuddy
-# Bot Created By: Sahaj Singh
-# Release V1.0
+# Project: EngBuddy / Bot Created By: Sahaj Singh / Release V1.0
 
 from discord.ext import commands
 from discord import app_commands
@@ -15,6 +13,7 @@ import html
 import aiohttp
 import sqlite3
 import random
+import subprocess
 
 sfu_red = 0xA6192E
 rateProf = 0x0055FD
@@ -41,8 +40,7 @@ messages = [
     "You're acting like a crazy person.",
     "Surprise Motherfucker!",
     "I'm just getting started.",
-    "I'm going to enjoy watching you die.",
-    "I got one word for you: Monkey"
+    "I'm going to enjoy watching you die."
 ]
 previous_message = None
 
@@ -50,7 +48,7 @@ previous_message = None
 @client.event
 async def on_ready():
     try:
-        populate()
+        await populate()
         await client.change_presence(activity=discord.Game(name="MATLAB"))
         await client.tree.sync()
     except Exception as e:
@@ -62,7 +60,7 @@ async def on_ready():
 async def add(ctx, *, id_value=None):
     if id_value is not None:
         if ctx.message.author.id == 484395342859862017:
-            add_new_id(id_value)
+            await add_new_id(id_value)
             user = await client.fetch_user(id_value)
             me = await client.fetch_user(484395342859862017)
             await user.send(f"You have been added to the whitelist by {ctx.author.name}")
@@ -107,8 +105,55 @@ async def help_func(interaction: discord.Interaction):
     embed_holder.add_field(
         name="echo", value="Returns the provided argument", inline=False)
     embed_holder.add_field(
+        name="arcade", value="Ask me what game is being played on the arcade machine", inline=False)
+    embed_holder.add_field(
         name="others", value="I also have some secrets for you to discover", inline=False)
     await interaction.response.send_message(embed=embed_holder, ephemeral=True)
+
+
+@client.tree.command(name="arcade", description="Ask me what game is being played on the arcade machine!")
+@app_commands.describe(visibility="Options: private, public or dm")
+async def arcade(interaction: discord.Interaction, *, visibility: str = None):
+    if interaction.user.id not in whitelist:
+        me = await client.fetch_user(484395342859862017)
+        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the imagine command.")
+        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
+        return
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        else:
+            selector = False
+    else:
+        selector = False
+    await interaction.response.defer(ephemeral=selector)
+    if is_emulator_running():
+        try:
+            with open("/dev/shm/runcommand.log", "r") as f:
+                runcommand_log = f.read()
+
+            rom_path_match = re.search(
+                r'(?<=/roms/).*\.(amstradcpc|atari2600|atari7800|atarilynx|coleco|fds|gb|gbc|mame-libretro|megadrive'
+                r'|n64|nes|ngpc|psp|sega32x|sg-1000|vectrex|arcade|atari5200|atari800|channelf|fba|gamegear|gba'
+                r'|genesis|mastersystem|msx|neogeo|ngp|pcengine|psx|segacd|snes|zxspectrum|iso)',
+                runcommand_log)
+
+            if rom_path_match:
+                rom_path = rom_path_match.group(0)
+                game_name = rom_path.split("/")[-1].split(".")[0].split("(")[0].split("[")[0].strip()
+                if rom_path.split("/")[-2] == "psp":
+                    game_name = re.sub(r'^\d{4} - ', '', game_name)
+
+                await interaction.followup.send("Currently running game:", game_name)
+            else:
+                await interaction.followup.send("No game currently running.")
+        except Exception as e:
+            print("Error:", e)
+            await interaction.followup.send("No game currently running.")
+    else:
+        await interaction.followup.send("No game currently running.")
 
 
 @client.tree.command(name="imagine", description="Ask me to make an image!")
@@ -1024,21 +1069,31 @@ async def chatgpt_call(question):
     return chat_response[:2000]
 
 
-def remove_spaces(value):
-    return value.replace(" ", "") if value else value
-
-
-def populate():
+async def populate():
     with open('ids.txt', 'r') as f:
         for line in f:
             id_value = line.strip()
             whitelist.append(int(id_value))
 
 
-def add_new_id(new_id):
+async def add_new_id(new_id):
     whitelist.append(int(new_id))
     with open('ids.txt', 'a') as f:
         f.write('\n' + new_id)
+
+
+def remove_spaces(value):
+    return value.replace(" ", "") if value else value
+
+
+def is_emulator_running():
+    try:
+        output = subprocess.check_output(["pgrep", "-f", "retroarch|PPSSPPSDL"])
+        if output:
+            return True
+    except subprocess.CalledProcessError:
+        pass
+    return False
 
 
 client.run(token)
