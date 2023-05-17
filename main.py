@@ -18,9 +18,9 @@ import subprocess
 sfu_red = 0xA6192E
 rateProf = 0x0055FD
 courseDigger = 0xE4bC0C
-openai.api_key = "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"
+openai.api_key = ""
+token = ""
 dalle_api_endpoint = "https://api.openai.com/v1/images/generations"
-token = "MTA4OTQwMTU5OTExMTIwMDg4MQ.GaN7tU.vTGHf6bgQhzbFCFmLHWWhKglnguwZ7ab1XF9Rk"
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 whitelist = []
 messages = [
