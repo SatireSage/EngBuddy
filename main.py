@@ -1,5 +1,4 @@
-# Project: EngBuddy / Bot Created By: Sahaj Singh / Release V1.0
-
+# Project: EngBuddy / Bot Created By: Sahaj Singh / Release V1.1
 from discord.ext import commands
 from discord import app_commands
 from utils.embed import embed
@@ -14,12 +13,16 @@ import aiohttp
 import sqlite3
 import random
 import subprocess
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+openai.api_key = os.getenv('OPENAI_API_KEY')
+token = os.getenv('DISCORD_TOKEN')
 
 sfu_red = 0xA6192E
 rateProf = 0x0055FD
 courseDigger = 0xE4bC0C
-openai.api_key = ""
-token = ""
 dalle_api_endpoint = "https://api.openai.com/v1/images/generations"
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 whitelist = []
@@ -142,7 +145,8 @@ async def arcade(interaction: discord.Interaction, *, visibility: str = None):
 
             if rom_path_match:
                 rom_path = rom_path_match.group(0)
-                game_name = rom_path.split("/")[-1].split(".")[0].split("(")[0].split("[")[0].strip()
+                game_name = rom_path.split(
+                    "/")[-1].split(".")[0].split("(")[0].split("[")[0].strip()
                 if rom_path.split("/")[-2] == "psp":
                     game_name = re.sub(r'^\d{4} - ', '', game_name)
 
@@ -785,10 +789,10 @@ async def rate_prof(interaction: discord.Interaction, *, name: str, visibility: 
             await interaction.followup.send(embed=e_obj)
         return
 
-    url = "https://www.ratemyprofessors.com/search/teachers?query={}&sid={}"
+    url = "https://www.ratemyprofessors.com/search/professors/{}?q={}"
     prof_name = name.replace(" ", "+")
     univ_id = 1482
-    search_url = url.format(prof_name, univ_id)
+    search_url = url.format(univ_id, prof_name)
     response = requests.get(search_url)
     if response.status_code != 200:
         e_obj = await embed(
@@ -1088,7 +1092,8 @@ def remove_spaces(value):
 
 def is_emulator_running():
     try:
-        output = subprocess.check_output(["pgrep", "-f", "retroarch|PPSSPPSDL"])
+        output = subprocess.check_output(
+            ["pgrep", "-f", "retroarch|PPSSPPSDL"])
         if output:
             return True
     except subprocess.CalledProcessError:
