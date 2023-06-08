@@ -1,4 +1,5 @@
 # Project: EngBuddy / Bot Created By: Sahaj Singh / Release V1.1
+
 from discord.ext import commands
 from discord import app_commands
 from utils.embed import embed
@@ -1000,6 +1001,25 @@ async def send_unique_message(message):
 async def on_message(message):
     # Make sure bot doesn't get stuck in an infinite loop
     if message.author == client.user:
+        return
+    # Grab latest announcement in announcements channel and store it in a json file
+    if str(message.channel) == "announcements" and not message.author.bot:
+        image_urls = [attachment.url for attachment in message.attachments]
+        latest_announcement = {"author": str(message.author), "content": message.content,
+                               "date": str(message.created_at), "images": image_urls}
+        # Load existing data
+        try:
+            with open('latest_announcement.json', 'r') as json_file:
+                try:
+                    data = json.load(json_file)
+                except json.JSONDecodeError:
+                    data = []
+        except FileNotFoundError:
+            data = []
+        # Add the latest announcement to the top and then write updated data back into the file
+        data.insert(0, latest_announcement)
+        with open('latest_announcement.json', 'w') as json_file:
+            json.dump(data, json_file, indent=4)
         return
     if isinstance(message.channel, discord.DMChannel):
         if message.author.id not in whitelist:
