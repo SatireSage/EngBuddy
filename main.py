@@ -1002,6 +1002,7 @@ async def on_message(message):
     # Make sure bot doesn't get stuck in an infinite loop
     if message.author == client.user:
         return
+
     # Grab latest announcement in announcements channel and store it in a json file
     if str(message.channel) == "announcements" and not message.author.bot:
         image_urls = [attachment.url for attachment in message.attachments]
@@ -1020,7 +1021,16 @@ async def on_message(message):
         data.insert(0, latest_announcement)
         with open('latest_announcement.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
+        # Update Github repo
+        try:
+            subprocess.check_call(['git', 'add', 'latest_announcement.json'])
+            subprocess.check_call(
+                ['git', 'commit', '-m', 'Update latest_announcement.json'])
+            subprocess.check_call(['git', 'push'])
+        except subprocess.CalledProcessError as e:
+            print(f"Error updating GitHub repo: {e}")
         return
+
     if isinstance(message.channel, discord.DMChannel):
         if message.author.id not in whitelist:
             me = await client.fetch_user(484395342859862017)
