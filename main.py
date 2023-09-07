@@ -93,25 +93,27 @@ async def help_func(interaction: discord.Interaction):
                                  color=0x4169e1)
     embed_holder.add_field(name="", value="", inline=False)
     embed_holder.add_field(
-        name="about", value="Let me tell you about myself", inline=False)
+        name="about", value="Let me tell you about myself!", inline=False)
     embed_holder.add_field(
-        name="ask", value="Ask me something and I will respond to the best of my ability", inline=False)
+        name="resource", value="Here are a few resources you can use!", inline=False)
     embed_holder.add_field(
-        name="imagine", value="Ask me make an image and I will create one", inline=False)
+        name="ask", value="Ask me something and I will respond to the best of my ability. *Restricted Use for Now - Ask Sahaj for PERMS", inline=False)
     embed_holder.add_field(
-        name="sfu", value="Information about available sfu classes", inline=False)
+        name="imagine", value="Ask me make an image and I will create one! *Restricted Use for Now - Ask Sahaj for PERMS", inline=False)
     embed_holder.add_field(
-        name="outline", value="Outline of an available sfu classes", inline=False)
+        name="sfu", value="Information about available sfu classes.", inline=False)
     embed_holder.add_field(
-        name="rate_prof", value="I will pull an available rating of the prof", inline=False)
+        name="outline", value="Outline of an available sfu classes.", inline=False)
     embed_holder.add_field(
-        name="rate_course", value="I will pull an available rating of the course", inline=False)
+        name="rate_prof", value="I will pull an available rating of the prof.", inline=False)
     embed_holder.add_field(
-        name="echo", value="Returns the provided argument", inline=False)
+        name="rate_course", value="I will pull an available rating of the course.", inline=False)
     embed_holder.add_field(
-        name="arcade", value="Ask me what game is being played on the arcade machine", inline=False)
+        name="echo", value="Returns the provided argument.", inline=False)
     embed_holder.add_field(
-        name="others", value="I also have some secrets for you to discover", inline=False)
+        name="arcade", value="Ask me what game is being played on the arcade machine. *Under development for Now", inline=False)
+    embed_holder.add_field(
+        name="others", value="I also have some secrets for you to discover.", inline=False)
     await interaction.response.send_message(embed=embed_holder, ephemeral=True)
 
 
@@ -159,6 +161,115 @@ async def arcade(interaction: discord.Interaction, *, visibility: str = None):
             await interaction.followup.send("No game currently running.")
     else:
         await interaction.followup.send("No game currently running.")
+
+
+@client.tree.command(name="resource", description="Here are a few resources you can use!")
+@app_commands.describe(visibility="Options: private, public or dm")
+async def resource(interaction: discord.Interaction, *, visibility: str = None):
+    # Create a new embed object for resources
+    resource_embed = discord.Embed(title="ESSS Resources",
+                                   description="Useful links for ESSS members!\u200B",
+                                   color=0x4169e1)
+    resource_embed.add_field(
+        name="Common Room", value="ASB8842: ESSS Common Room", inline=False)
+    resource_embed.add_field(
+        name="Office", value="ASB8834: ESSS Office", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+
+    # Course Planning & SFU MATLAB Facebook
+    resource_embed.add_field(
+        name="📚 Course Resources", value="", inline=False)
+    resource_embed.add_field(
+        name="Course Planning", value="[sfu.coursenavigator.ca](https://sfu.coursenavigator.ca/) 🤠", inline=False)
+    resource_embed.add_field(name="SFU MATLAB Facebook",
+                             value="[Facebook Group](https://www.facebook.com/groups/sfumatlab)", inline=False)
+    resource_embed.add_field(name="SFU MATLAB Intagream",
+                             value="[Facebook Group](https://www.instagram.com/sfu_matlab/)", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+
+    # ESSS Social Media
+    resource_embed.add_field(
+        name="📱 ESSS Social Media", value="", inline=False)
+    resource_embed.add_field(
+        name="Linktree", value="[linktr.ee/sfuesss](https://linktr.ee/sfuesss)", inline=True)
+    resource_embed.add_field(
+        name="Website", value="[sfu.ca/esss](http://www.esss.ca)", inline=True)
+    resource_embed.add_field(
+        name="Instagram", value="[Instagram](https://www.instagram.com/sfuengineers)", inline=True)
+    resource_embed.add_field(
+        name="Facebook", value="[Facebook](https://www.facebook.com/SFU.ESSS)", inline=True)
+    resource_embed.add_field(
+        name="LinkedIn", value="[LinkedIn](https://www.linkedin.com/company/sfu-engineering-science-student-society)", inline=True)
+    resource_embed.add_field(
+        name="Twitter", value="[Twitter](https://twitter.com/sfuengineering)", inline=True)
+    resource_embed.add_field(name="", value="", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+
+    # Free Software
+    resource_embed.add_field(
+        name="💻 Free Software", value="", inline=False)
+    resource_embed.add_field(
+        name="Altium Designer", value="[altium.com](https://www.altium.com/education/student-licenses)", inline=True)
+    resource_embed.add_field(name="SFU Software Catalogue (MATLAB)(SOLIDWORKS)",
+                             value="[sfu.ca](https://www.sfu.ca/information-systems/services/software.html)", inline=True)
+    resource_embed.add_field(name="Autodesk (AutoCAD)(Fusion 360)",
+                             value="[autodesk.com](https://www.autodesk.com/education/edu-software/overview?sorting=featured&filters=individual)", inline=True)
+    resource_embed.add_field(
+        name="Zemax OpticStudio", value="[zemax.com](https://academic.zemax.com/student-application/)", inline=True)
+    resource_embed.add_field(name="", value="", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+
+    # Affiliates and Design Teams
+    resource_embed.add_field(
+        name="🤝 Affiliates and Design Teams", value="", inline=False)
+    resource_embed.add_field(
+        name="WiE", value="[Discord](https://discord.gg/NdmbAMhVHY)", inline=True)
+    resource_embed.add_field(
+        name="WiE Design", value="[Discord](https://discord.gg/YX45E9Cr7j)", inline=True)
+    resource_embed.add_field(
+        name="Robot Soccer", value="[Discord](https://discord.gg/Hyc48DJSEU)", inline=False)
+    resource_embed.add_field(
+        name="Team Phantom", value="[teamphantom.ca](https://www.teamphantom.ca/)", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+
+    # Course and Cohort Server Catalogue
+    resource_embed.add_field(
+        name="🏫 Course and Cohort Server Catalogue", value="", inline=False)
+    resource_embed.add_field(
+        name="Year 3 Term 1", value="[Discord](https://discord.gg/tJgJU3wtGp)", inline=True)
+    resource_embed.add_field(
+        name="FAS First Years", value="[Discord](https://discord.gg/nu9QUYxfbE)", inline=True)
+    resource_embed.add_field(name="", value="", inline=False)
+    resource_embed.add_field(name="", value="", inline=False)
+
+    # Handling visibility based on your previous code
+    dm = False
+    if visibility is not None:
+        if remove_spaces(visibility.lower()) == "private":
+            selector = True
+        elif remove_spaces(visibility.lower()) == "public":
+            selector = False
+        elif remove_spaces(visibility.lower()) == "dm":
+            selector = False
+            dm = True
+        else:
+            selector = True
+    else:
+        selector = True
+
+    await interaction.response.defer(ephemeral=selector)
+    try:
+        if dm:
+            await interaction.user.send(embed=resource_embed)
+            await interaction.followup.send("Please check your DM! BTW You can talk to me directly in DMs!")
+        else:
+            await interaction.followup.send(embed=resource_embed)
+    except Exception as e:
+        print(f"Something went wrong: {e}")
+        await interaction.followup.send("Sorry, I couldn't send the resource information.")
 
 
 @client.tree.command(name="imagine", description="Ask me to make an image!")
@@ -248,11 +359,6 @@ async def ask(interaction: discord.Interaction, *, question: str, visibility: st
 @client.tree.command(name="echo", description="Returns the provided argument!")
 @app_commands.describe(argument="Returns the provided argument")
 async def echo(interaction: discord.Interaction, *, argument: str):
-    if interaction.user.id not in whitelist:
-        me = await client.fetch_user(484395342859862017)
-        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the echo command.")
-        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
-        return
     await interaction.response.send_message(argument, ephemeral=False)
 
 
@@ -279,11 +385,6 @@ async def about(interaction: discord.Interaction):
 @app_commands.describe(course="Information about available sfu classes")
 @app_commands.describe(visibility="Options: private or public")
 async def sfu(interaction: discord.Interaction, *, course: str, visibility: str = None):
-    if interaction.user.id not in whitelist:
-        me = await client.fetch_user(484395342859862017)
-        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the sfu command.")
-        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
-        return
     if visibility is not None:
         if remove_spaces(visibility.lower()) == "private":
             selector = True
@@ -427,11 +528,6 @@ async def sfu(interaction: discord.Interaction, *, course: str, visibility: str 
 @app_commands.describe(course="Outline of an available sfu classes")
 @app_commands.describe(visibility="Options: private or public")
 async def outline(interaction: discord.Interaction, *, course: str, visibility: str = None):
-    if interaction.user.id not in whitelist:
-        me = await client.fetch_user(484395342859862017)
-        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the outline command.")
-        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
-        return
     if visibility is not None:
         if remove_spaces(visibility.lower()) == "private":
             selector = True
@@ -744,11 +840,6 @@ async def outline(interaction: discord.Interaction, *, course: str, visibility: 
 @app_commands.describe(name="Provide the name of the prof")
 @app_commands.describe(visibility="Options: private or public")
 async def rate_prof(interaction: discord.Interaction, *, name: str, visibility: str = None):
-    if interaction.user.id not in whitelist:
-        me = await client.fetch_user(484395342859862017)
-        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the outline command.")
-        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
-        return
     if visibility is not None:
         if remove_spaces(visibility.lower()) == "private":
             selector = True
@@ -887,11 +978,6 @@ async def rate_prof(interaction: discord.Interaction, *, name: str, visibility: 
 @app_commands.describe(course="Provide the name of the course")
 @app_commands.describe(visibility="Options: private or public")
 async def rate_course(interaction: discord.Interaction, *, course: str, visibility: str = None):
-    if interaction.user.id not in whitelist:
-        me = await client.fetch_user(484395342859862017)
-        await me.send(f"{interaction.user.name}#{interaction.user.discriminator} tried to use the outline command.")
-        await interaction.response.send_message("You dont have access. Ask Sahaj for access!", ephemeral=True)
-        return
     if visibility is not None:
         if remove_spaces(visibility.lower()) == "private":
             selector = True
@@ -1002,7 +1088,8 @@ async def on_message(message):
     # Make sure bot doesn't get stuck in an infinite loop
     if message.author == client.user:
         return
-
+    if client.user.mentioned_in(message):
+        await message.channel.send(f"Hello {message.author.mention}, how can I help you? Type `/help` for a list of my commands.")
     # Grab latest announcement in announcements channel and store it in a json file
     if str(message.channel) == "announcements" and not message.author.bot:
         image_urls = [attachment.url for attachment in message.attachments]
@@ -1045,8 +1132,6 @@ async def on_message(message):
         await message.channel.send(response)
     if message.author.bot:
         await send_unique_message(message)
-    if message.author.id not in whitelist:
-        return
     try:
         response = handle_message(remove_spaces(message.content))
         if response == 1:
@@ -1059,6 +1144,8 @@ async def on_message(message):
             await message.channel.send("There is only one mike...")
         elif response == 5:
             await message.channel.send("Does it make sense, guys? Let's have an example.")
+        elif response == 6:
+            await message.channel.send("Follow SFU MATLAB on Instagram! Now!!!")
     except Exception as e:
         print(f"Error processing message: {e}")
 
@@ -1076,6 +1163,8 @@ def handle_message(name):
         return 4
     elif "majid" in (name.lower()).strip():
         return 5
+    elif "matlab" in (name.lower()).strip():
+        return 6
     else:
         return 0
 
