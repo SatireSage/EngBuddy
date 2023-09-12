@@ -1088,7 +1088,7 @@ async def on_message(message):
     # Make sure bot doesn't get stuck in an infinite loop
     if message.author == client.user:
         return
-    if client.user.mentioned_in(message):
+    if client.user.mentioned_in(message) and not message.mention_everyone:
         await message.channel.send(f"Hello {message.author.mention}, how can I help you? Type `/help` for a list of my commands.")
     # Grab latest announcement in announcements channel and store it in a json file
     if str(message.channel) == "announcements" and not message.author.bot:
@@ -1145,7 +1145,9 @@ async def on_message(message):
         elif response == 5:
             await message.channel.send("Does it make sense, guys? Let's have an example.")
         elif response == 6:
-            await message.channel.send("Follow SFU MATLAB on Instagram! Now!!!")
+            await message.channel.send("Follow SFU MATLAB on Instagram! Now!!! https://www.instagram.com/sfu_matlab/")
+        elif response == 7:
+            await message.channel.send("Oh, you mean Quinn, the mystical unicorn who can only be summoned with a sprinkle of glitter and a splash of almond milk? Good luck finding them!")
     except Exception as e:
         print(f"Error processing message: {e}")
 
@@ -1164,6 +1166,8 @@ def handle_message(name):
     elif "majid" in (name.lower()).strip():
         return 5
     elif "matlab" in (name.lower()).strip():
+        return 6
+    elif "quinn" in (name.lower()).strip():
         return 6
     else:
         return 0
