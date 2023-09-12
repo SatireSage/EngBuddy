@@ -1168,7 +1168,7 @@ def handle_message(name):
     elif "matlab" in (name.lower()).strip():
         return 6
     elif "quinn" in (name.lower()).strip():
-        return 6
+        return 7
     else:
         return 0
 
