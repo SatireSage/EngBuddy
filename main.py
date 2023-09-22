@@ -1157,25 +1157,20 @@ async def on_message(message):
 
 
 def handle_message(name):
-    name_stripped = (name.lower()).strip()
-    if "sahaj" in name_stripped:
-        return 1
-    if "craig" in name_stripped:
-        return 2
-    elif "сгаig" in name_stripped:
-        return 3
-    elif "mike" in name_stripped:
-        return 4
-    elif "majid" in name_stripped:
-        return 5
-    elif "matlab" in name_stripped:
-        return 6
-    elif "quinn" in name_stripped:
-        return 7
-    elif "ash" in name_stripped:
-        return 8
-    else:
-        return 0
+    name_stripped = name.lower().strip()
+
+    name_map = {
+        "sahaj": 1,
+        "craig": 2,
+        "сгаig": 3,
+        "mike": 4,
+        "majid": 5,
+        "matlab": 6,
+        "quinn": 7,
+        "ash": 8
+    }
+
+    return name_map.get(name_stripped, 0)
 
 
 async def chatgpt_call(question):
