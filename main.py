@@ -1148,6 +1148,8 @@ async def on_message(message):
             await message.channel.send("Follow SFU MATLAB on Instagram! Now!!! https://www.instagram.com/sfu_matlab/")
         elif response == 7:
             await message.channel.send("Oh, you mean Quinn, the mystical unicorn who can only be summoned with a sprinkle of glitter and a splash of almond milk? Good luck finding them!")
+        elif response == 8:
+            await message.channel.send("Let's kick it up a notch. Shall we?")
     except Exception as e:
         print(f"Error processing message: {e}")
 
@@ -1155,20 +1157,23 @@ async def on_message(message):
 
 
 def handle_message(name):
-    if "sahaj" in (name.lower()).strip():
+    name_stripped = (name.lower()).strip()
+    if "sahaj" in name_stripped:
         return 1
-    if "craig" in (name.lower()).strip():
+    if "craig" in name_stripped:
         return 2
-    elif "сгаig" in (name.lower()).strip():
+    elif "сгаig" in name_stripped:
         return 3
-    elif "mike" in (name.lower()).strip():
+    elif "mike" in name_stripped:
         return 4
-    elif "majid" in (name.lower()).strip():
+    elif "majid" in name_stripped:
         return 5
-    elif "matlab" in (name.lower()).strip():
+    elif "matlab" in name_stripped:
         return 6
-    elif "quinn" in (name.lower()).strip():
+    elif "quinn" in name_stripped:
         return 7
+    elif "ash" in name_stripped:
+        return 8
     else:
         return 0
 
