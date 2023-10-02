@@ -1,6 +1,14 @@
 [
     {
         "author": "inkarnid#0",
+        "content": "",
+        "date": "2023-10-02 21:03:28.251000+00:00",
+        "images": [
+            "https://cdn.discordapp.com/attachments/446427365598429214/1158509580914012270/linux_workshop_2.png?ex=651c81a0&is=651b3020&hm=23447f29defe15415e792322e87d5d70315e38b5d7c332a425526d1a6fe858dc&"
+        ]
+    },
+    {
+        "author": "inkarnid#0",
         "content": "## Linux Workshop\n\nHey @everyone we are excited to announce our next workshop in the Linux series\n\n**It is expected that you have access to the Linux command line on your laptop**\n\n> Instructions to install Linux on your laptop can be found  here -> http://www.sfu.ca/esss/?page=news <- under Linux Workshop\n\nIn the context of the Linux command line, we will cover:\n- Review of the Basics\n- Kernel and Process Management\n- Linux File System Deep Dive\n- What is sudo?\n- Command Line Debugging\n- Secure Shell\n\nDate: Wednesday October 4th\nTime: 7:00 PM\nWhere: TASC9204\n\nSee you there!",
         "date": "2023-10-02 20:58:28.263000+00:00",
         "images": []
